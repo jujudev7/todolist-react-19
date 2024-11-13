@@ -113,7 +113,10 @@ export default function App() {
             />
             <span className="flex-1">{todo.text}</span>
             <button
-              onClick={() => deleteTodo(todo.id)}
+              onClick={() => {
+                deleteTodo(todo.id);
+                setCount(count - 1);
+              }}
               className="border border-zinc-800 bg-white rounded-md p-2 text-xs"
             >
               🗑️
