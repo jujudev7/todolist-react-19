@@ -1,18 +1,46 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+const getDefaultLocalStorageValue = (key) => {
+  const storedValue = localStorage.getItem(key);
+  if (!storedValue) {
+    return null;
+  }
+  try {
+    return JSON.parse(storedValue);
+  } catch {
+    return null;
+  }
+};
+
+const useStickyState = (localStorageKey, defaultValue) => {
+  const [state, setState] = useState(
+    getDefaultLocalStorageValue(localStorageKey) ?? defaultValue
+  );
+
+  // UseEffect ? localStorage = side effect  En dehors de React !
+  useEffect(() => {
+    localStorage.setItem(localStorageKey, JSON.stringify(state));
+    // Quand le state change
+  }, [localStorageKey, state]);
+
+  return [state, setState];
+};
 
 export default function App() {
-  const [todos, setTodos] = useState([
+  const [todos, setTodos] = useStickyState("ma-super-todolist", [
     { id: 1, text: "Dormir", checked: false },
     { id: 2, text: "Manger", checked: true },
   ]);
   // const [todo, setTodo] = useState();
+
+  const [count, setCount] = useStickyState("count-saved", 0);
 
   const onSubmit = async (formData) => {
     const todo = formData.get("todo");
 
     // todos.unshift(todo);
     // setTodos([todo, ...todos]);
-    setTodos([{ id: Date.now(), text: todo }, ...todos]);
+    setTodos([{ id: Date.now(), text: todo, checked: false }, ...todos]);
   };
 
   // const deleteTodo = (text) => {
@@ -50,6 +78,7 @@ export default function App() {
   return (
     <div className="p-4 flex flex-col gap-4">
       {/* <h1 className="font-bold text-2xl">{todo}</h1> */}
+      <h1 className="font-bold">Count: {count}</h1>
       <form action={onSubmit} className="flex items-center gap-2">
         <input name="todo" className="border rounded-md px-4 py-3 flex-1" />
         {/* Controlled input (good if we want to display the result somewhere) */}
@@ -64,6 +93,7 @@ export default function App() {
         <button
           type="submit"
           className="border rounded-md px-4 py-3 bg-zinc-800 text-white"
+          onClick={() => setCount(count + 1)}
         >
           Add
         </button>
